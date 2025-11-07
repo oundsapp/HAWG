@@ -122,7 +122,10 @@ export default function Home() {
       style={{ backgroundColor: '#0a0a0a' }}
     >
       <div className="flex items-center justify-center w-full h-screen">
-        <ModelViewer modelPath="/hawg-3d/base.obj" />
+        <ModelViewer 
+          modelPath={health.health < 50 ? "/hawg-3d-hungry/base.obj" : "/hawg-3d/base.obj"}
+          basePath={health.health < 50 ? "/hawg-3d-hungry" : "/hawg-3d"}
+        />
       </div>
       
       {/* Motherlode Box - Desktop Only - Top Left */}

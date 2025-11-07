@@ -6,7 +6,7 @@ import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 
-function Model({ url }: { url: string }) {
+function Model({ url, basePath }: { url: string; basePath: string }) {
   const [obj, setObj] = useState<THREE.Group | null>(null);
   const meshRef = useRef<THREE.Group>(null);
 
@@ -25,31 +25,31 @@ function Model({ url }: { url: string }) {
     
     // Load all PBR textures
     const diffuseTexture = textureLoader.load(
-      "/hawg-3d/texture_diffuse.png",
+      `${basePath}/texture_diffuse.png`,
       (texture) => {
         configureTexture(texture);
       }
     );
     const normalTexture = textureLoader.load(
-      "/hawg-3d/texture_normal.png",
+      `${basePath}/texture_normal.png`,
       (texture) => {
         configureTexture(texture);
       }
     );
     const metallicTexture = textureLoader.load(
-      "/hawg-3d/texture_metallic.png",
+      `${basePath}/texture_metallic.png`,
       (texture) => {
         configureTexture(texture);
       }
     );
     const roughnessTexture = textureLoader.load(
-      "/hawg-3d/texture_roughness.png",
+      `${basePath}/texture_roughness.png`,
       (texture) => {
         configureTexture(texture);
       }
     );
     const pbrTexture = textureLoader.load(
-      "/hawg-3d/texture_pbr.png",
+      `${basePath}/texture_pbr.png`,
       (texture) => {
         configureTexture(texture);
       }
@@ -69,10 +69,10 @@ function Model({ url }: { url: string }) {
               metalnessMap: metallicTexture,
               roughnessMap: roughnessTexture,
               aoMap: pbrTexture,
-              metalness: 0,
-              roughness: 0,
+              metalness: 0.5,
+              roughness: 0.5,
               normalScale: new THREE.Vector2(1, 1),
-              aoMapIntensity: 0,
+              aoMapIntensity: 0.5,
             });
           }
         });
@@ -105,7 +105,7 @@ function Model({ url }: { url: string }) {
     return () => {
       cancelled = true;
     };
-  }, [url]);
+  }, [url, basePath]);
 
   // Auto-rotation disabled
 
@@ -134,7 +134,7 @@ function CameraController() {
   return null;
 }
 
-export default function ModelViewer({ modelPath }: { modelPath: string }) {
+export default function ModelViewer({ modelPath, basePath }: { modelPath: string; basePath: string }) {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   
   return (
@@ -149,7 +149,7 @@ export default function ModelViewer({ modelPath }: { modelPath: string }) {
         <directionalLight position={[-5, 5, -5]} intensity={0.6} />
         <pointLight position={[0, 0, 5]} intensity={0.3} />
         <Suspense fallback={null}>
-          <Model url={modelPath} />
+          <Model url={modelPath} basePath={basePath} />
         </Suspense>
         <OrbitControls 
           enableZoom={false} 
