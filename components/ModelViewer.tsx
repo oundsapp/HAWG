@@ -70,9 +70,9 @@ function Model({ url, basePath }: { url: string; basePath: string }) {
               roughnessMap: roughnessTexture,
               aoMap: pbrTexture,
               metalness: 0.5,
-              roughness: 0.5,
+              roughness: 0.8,
               normalScale: new THREE.Vector2(1, 1),
-              aoMapIntensity: 0.5,
+              aoMapIntensity: 1.0,
             });
           }
         });
