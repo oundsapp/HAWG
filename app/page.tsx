@@ -29,11 +29,17 @@ interface Health {
   health: number;
 }
 
+interface Motherlode {
+  motherlode: string;
+}
+
 export default function Home() {
   const [prices, setPrices] = useState<Prices>({ sol: 0, ore: 0, oreIcon: "" });
   const [loading, setLoading] = useState(true);
   const [health, setHealth] = useState<Health>({ solBalance: 0, health: 100 });
   const [healthLoading, setHealthLoading] = useState(true);
+  const [motherlode, setMotherlode] = useState<Motherlode>({ motherlode: "0.000000000 ORE" });
+  const [motherlodeLoading, setMotherlodeLoading] = useState(true);
   const [isToolsModalOpen, setIsToolsModalOpen] = useState(false);
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
 
@@ -77,11 +83,39 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const fetchMotherlode = async () => {
+      try {
+        const response = await fetch("/api/motherlode");
+        const data = await response.json();
+        setMotherlode({ motherlode: data.motherlode || "0.000000000 ORE" });
+      } catch (error) {
+        console.error("Error fetching motherlode:", error);
+      } finally {
+        setMotherlodeLoading(false);
+      }
+    };
+
+    fetchMotherlode();
+    // Refresh motherlode every 60 seconds
+    const interval = setInterval(fetchMotherlode, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const formatPrice = (price: number) => {
     if (price === 0) return "0.00";
     if (price < 0.01) return price.toFixed(6);
     if (price < 1) return price.toFixed(4);
     return price.toFixed(2);
+  };
+
+  const getHealthStatus = (health: number) => {
+    if (health < 25) return "VERY HUNGRY";
+    if (health < 50) return "HUNGRY";
+    if (health < 75) return "RAISED APPETITE";
+    if (health < 95) return "SCRATCHING STOMACH";
+    return "FULL";
   };
 
   return (
@@ -93,35 +127,46 @@ export default function Home() {
         <ModelViewer modelPath="/hawg-3d/base.obj" />
       </div>
       
-      {/* HAWG HEALTH Box - Desktop Only */}
-      <div className="hidden md:block absolute left-8 top-1/2 -translate-y-1/2">
+      {/* Motherlode Box - Desktop Only - Top Left */}
+      <div className="hidden md:block absolute left-8 top-8">
         <Card className="bg-transparent border border-gray-700">
           <CardHeader>
-            <CardTitle className="text-white text-xl">HAWG HEALTH</CardTitle>
+            <CardTitle className="text-white text-xl">MOTHERLODE</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Heart 
-                  className={`w-5 h-5 ${
-                    health.health >= 50 ? 'text-green-500 fill-green-500' :
-                    'text-red-500 fill-red-500'
-                  }`}
-                />
-                <span className="text-white text-sm font-semibold">{healthLoading ? "..." : `${health.health}%`}</span>
-              </div>
-              <div className="w-full bg-gray-800 rounded-full h-2">
-                <div
-                  className={`h-2 rounded-full transition-all duration-500 ${
-                    health.health >= 50 ? 'bg-green-500' :
-                    'bg-red-500'
-                  }`}
-                  style={{ width: `${health.health}%` }}
-                />
+            <div className="flex items-center gap-3">
+              <Image
+                src={prices.oreIcon || "https://ore.supply/assets/icon.png"}
+                alt="ORE"
+                width={32}
+                height={32}
+                className="rounded-full w-8 h-8"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              <div className="text-white text-2xl font-bold">
+                {motherlodeLoading ? "..." : motherlode.motherlode}
               </div>
             </div>
           </CardContent>
         </Card>
+      </div>
+      
+      {/* Enter Mines Button - Desktop Only - Top Right */}
+      <div className="hidden md:block absolute right-8 top-8">
+        <Button
+          asChild
+          className="bg-transparent border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-600 transition-colors"
+        >
+          <a
+            href="https://ore.supply"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Enter Mines
+          </a>
+        </Button>
       </div>
       
       {/* Community Tools Box - Desktop Only */}
@@ -162,7 +207,7 @@ export default function Home() {
       </div>
 
       {/* Mobile Buttons */}
-      <div className="md:hidden absolute bottom-4 right-4 flex gap-2">
+      <div className="md:hidden absolute top-20 flex gap-2 justify-center w-full px-4">
         {/* Health Button */}
         <Dialog open={isHealthModalOpen} onOpenChange={setIsHealthModalOpen}>
           <DialogTrigger asChild>
@@ -241,40 +286,73 @@ export default function Home() {
         </Dialog>
       </div>
       
-      <div className="absolute top-4 md:top-16 w-full px-4">
-        <div className="flex justify-center items-center gap-8 md:gap-24">
-          <div className="flex items-center gap-2 md:gap-4">
+      {/* Health Bar - Above Prices */}
+      <div className="absolute top-2 md:top-8 w-full px-4">
+        <div className="flex flex-col items-center gap-4 md:gap-6">
+          <div className="w-full max-w-2xl bg-gray-800 rounded-full h-6 md:h-8">
+            <div
+              className={`h-6 md:h-8 rounded-full transition-all duration-500 ${
+                health.health >= 50 ? 'bg-green-500' :
+                'bg-red-500'
+              }`}
+              style={{ width: `${health.health}%` }}
+            />
+          </div>
+          <div className="text-white text-2xl md:text-4xl font-bold text-center">
+            {healthLoading ? "..." : getHealthStatus(health.health)}
+          </div>
+        </div>
+      </div>
+      
+      <div className="absolute top-32 md:bottom-4 md:left-8 md:top-auto w-full md:w-auto px-4">
+        <div className="flex justify-center md:justify-start items-center gap-8 md:gap-6 flex-col md:flex-row">
+          <div className="flex items-center gap-2 md:gap-3">
             <Image
               src={prices.oreIcon || "https://ore.supply/assets/icon.png"}
               alt="ORE"
               width={48}
               height={48}
-              className="rounded-full w-6 h-6 md:w-12 md:h-12"
+              className="rounded-full w-6 h-6 md:w-8 md:h-8"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}
             />
-            <div className="text-white text-lg md:text-5xl font-bold">
+            <div className="text-white text-lg md:text-2xl font-bold">
               {loading ? "..." : `$${formatPrice(prices.ore)}`}
             </div>
           </div>
           
-          <div className="flex items-center gap-2 md:gap-4">
+          <div className="flex items-center gap-2 md:gap-3">
             <Image
               src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
               alt="SOL"
               width={48}
               height={48}
-              className="rounded-full w-6 h-6 md:w-12 md:h-12"
+              className="rounded-full w-6 h-6 md:w-8 md:h-8"
               onError={(e) => {
                 // Fallback if image fails to load
                 e.currentTarget.style.display = 'none';
               }}
             />
-            <div className="text-white text-lg md:text-5xl font-bold">
+            <div className="text-white text-lg md:text-2xl font-bold">
               {loading ? "..." : `$${formatPrice(prices.sol)}`}
             </div>
           </div>
+        </div>
+      </div>
+      
+      {/* Credit - Bottom Right */}
+      <div className="absolute bottom-4 right-4">
+        <div className="text-white text-sm opacity-70">
+          created by{" "}
+          <a
+            href="https://x.com/glocktoshi"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gray-300 transition-colors underline"
+          >
+            glocktoshi
+          </a>
         </div>
       </div>
     </main>
