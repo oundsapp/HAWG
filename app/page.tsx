@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { Heart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,8 +39,7 @@ export default function Home() {
   const [healthLoading, setHealthLoading] = useState(true);
   const [motherlode, setMotherlode] = useState<Motherlode>({ motherlode: "0.000000000 ORE" });
   const [motherlodeLoading, setMotherlodeLoading] = useState(true);
-  const [isToolsModalOpen, setIsToolsModalOpen] = useState(false);
-  const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
+  const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchPrices = async () => {
@@ -206,60 +204,99 @@ export default function Home() {
         </Card>
       </div>
 
-      {/* Mobile Buttons */}
-      <div className="md:hidden absolute top-20 flex gap-2 justify-center w-full px-4">
-        {/* Health Button */}
-        <Dialog open={isHealthModalOpen} onOpenChange={setIsHealthModalOpen}>
-          <DialogTrigger asChild>
-            <button className="px-4 py-2 text-sm text-white border border-gray-700 rounded hover:border-gray-600 transition-colors">
-              Health
-            </button>
-          </DialogTrigger>
-          <DialogContent className="bg-transparent border border-gray-700 p-6">
-            <DialogHeader>
-              <DialogTitle className="text-white text-lg mb-4">HAWG HEALTH</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Heart 
-                  className={`w-5 h-5 ${
-                    health.health >= 50 ? 'text-green-500 fill-green-500' :
-                    'text-red-500 fill-red-500'
-                  }`}
-                />
-                <span className="text-white text-sm font-semibold">{healthLoading ? "..." : `${health.health}%`}</span>
-              </div>
-              <div className="w-full bg-gray-800 rounded-full h-2">
-                <div
-                  className={`h-2 rounded-full transition-all duration-500 ${
+      {/* Health Bar - Above Prices */}
+      <div className="absolute top-2 md:top-8 w-full px-4">
+        <div className="flex flex-col items-center gap-4 md:gap-6">
+          <div className="w-full max-w-2xl bg-gray-800 rounded-full h-6 md:h-8">
+            <div
+              className={`h-6 md:h-8 rounded-full transition-all duration-500 ${
                     health.health >= 50 ? 'bg-green-500' :
                     'bg-red-500'
                   }`}
                   style={{ width: `${health.health}%` }}
                 />
               </div>
+          <div className="text-white text-lg md:text-4xl font-bold text-center">
+            {healthLoading ? "..." : getHealthStatus(health.health)}
             </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Tools Button */}
-        <Dialog open={isToolsModalOpen} onOpenChange={setIsToolsModalOpen}>
+          {/* Mobile Menu Button - Below Health Text */}
+          <div className="md:hidden">
+            <Dialog open={isMenuModalOpen} onOpenChange={setIsMenuModalOpen}>
           <DialogTrigger asChild>
             <button className="px-4 py-2 text-sm text-white border border-gray-700 rounded hover:border-gray-600 transition-colors">
-              Tools
+                  Menu
             </button>
           </DialogTrigger>
-          <DialogContent className="bg-transparent border border-gray-700 p-6">
+              <DialogContent className="bg-transparent border border-gray-700 p-6 max-w-sm">
             <DialogHeader>
-              <DialogTitle className="text-white text-lg mb-4">Community Tools</DialogTitle>
+                  <DialogTitle className="text-white text-lg mb-4">Menu</DialogTitle>
             </DialogHeader>
+                <div className="space-y-6">
+                  {/* Enter Mines Button */}
+                  <div className="space-y-3">
+                    <Button
+                      asChild
+                      className="w-full bg-transparent border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-600 transition-colors"
+                    >
+                      <a
+                        href="https://ore.supply"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setIsMenuModalOpen(false)}
+                      >
+                        Enter Mines
+                      </a>
+                    </Button>
+                  </div>
+
+                  {/* Prices Section */}
+                  <div className="space-y-3">
+                    <div className="text-white text-sm font-semibold opacity-70">Prices</div>
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center gap-3">
+                        <Image
+                          src={prices.oreIcon || "https://ore.supply/assets/icon.png"}
+                          alt="ORE"
+                          width={32}
+                          height={32}
+                          className="rounded-full w-8 h-8"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                        <div className="text-white text-lg font-bold">
+                          {loading ? "..." : `$${formatPrice(prices.ore)}`}
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-3">
+                        <Image
+                          src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
+                          alt="SOL"
+                          width={32}
+                          height={32}
+                          className="rounded-full w-8 h-8"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                        <div className="text-white text-lg font-bold">
+                          {loading ? "..." : `$${formatPrice(prices.sol)}`}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Community Tools Section */}
             <div className="space-y-3">
+                    <div className="text-white text-sm font-semibold opacity-70">Community Tools</div>
+                    <div className="space-y-2">
               <a
                 href="https://refinore.com/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white hover:text-gray-300 transition-colors block py-2"
-                onClick={() => setIsToolsModalOpen(false)}
+                        onClick={() => setIsMenuModalOpen(false)}
               >
                 RefinORE
               </a>
@@ -268,7 +305,7 @@ export default function Home() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white hover:text-gray-300 transition-colors block py-2"
-                onClick={() => setIsToolsModalOpen(false)}
+                        onClick={() => setIsMenuModalOpen(false)}
               >
                 ORE Mining Tracker
               </a>
@@ -277,34 +314,20 @@ export default function Home() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white hover:text-gray-300 transition-colors block py-2"
-                onClick={() => setIsToolsModalOpen(false)}
+                        onClick={() => setIsMenuModalOpen(false)}
               >
                 gmore.fun
               </a>
+                    </div>
+                  </div>
             </div>
           </DialogContent>
         </Dialog>
-      </div>
-      
-      {/* Health Bar - Above Prices */}
-      <div className="absolute top-2 md:top-8 w-full px-4">
-        <div className="flex flex-col items-center gap-4 md:gap-6">
-          <div className="w-full max-w-2xl bg-gray-800 rounded-full h-6 md:h-8">
-            <div
-              className={`h-6 md:h-8 rounded-full transition-all duration-500 ${
-                health.health >= 50 ? 'bg-green-500' :
-                'bg-red-500'
-              }`}
-              style={{ width: `${health.health}%` }}
-            />
-          </div>
-          <div className="text-white text-2xl md:text-4xl font-bold text-center">
-            {healthLoading ? "..." : getHealthStatus(health.health)}
           </div>
         </div>
       </div>
       
-      <div className="absolute top-32 md:bottom-4 md:left-8 md:top-auto w-full md:w-auto px-4">
+      <div className="absolute bottom-16 md:bottom-4 md:left-8 md:top-auto w-full md:w-auto px-4 hidden md:flex">
         <div className="flex justify-center md:justify-start items-center gap-8 md:gap-6 flex-col md:flex-row">
           <div className="flex items-center gap-2 md:gap-3">
             <Image
