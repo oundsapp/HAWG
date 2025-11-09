@@ -48,6 +48,7 @@ export default function Home() {
   const [round, setRound] = useState<Round>({ deployedSol: "0.000000000", miningStatus: "idle", uniqueMiners: "0" });
   const [roundLoading, setRoundLoading] = useState(true);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
+  const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchPrices = async () => {
@@ -184,7 +185,7 @@ export default function Home() {
     return Number.isFinite(numeric) ? numeric : 0;
   })();
   const minersPerCostSol = !costLoading && uniqueMinersNumber > 0 && costPerOreSol > 0
-    ? uniqueMinersNumber / costPerOreSol
+    ? (uniqueMinersNumber / costPerOreSol) * 1.11
     : 0;
   // USD equivalent of the SOL value displayed above
   const usdFromDisplayedSol = !costLoading && minersPerCostSol > 0
@@ -201,16 +202,173 @@ export default function Home() {
 
   return (
     <main 
-      className="relative flex flex-col min-h-screen items-center justify-center" 
+      className="relative flex flex-col min-h-screen items-center justify-start md:justify-center" 
       style={{ backgroundColor: '#0a0a0a' }}
     >
-      <div className="flex items-center justify-center w-full h-screen">
-        <ModelViewer 
+      {/* Model + Health stack - Desktop Only - Bottom Right above credit */}
+      <div className="hidden md:flex flex-col items-end gap-0 absolute bottom-12 right-0 z-10 items-center max-w-[250px]">
+        {/* Desktop Model */}
+        <ModelViewer
           modelPath={health.health < 50 ? "/hawg-3d-hungry/base.obj" : "/hawg-3d/base.obj"}
           basePath={health.health < 50 ? "/hawg-3d-hungry" : "/hawg-3d"}
+          variant="compact"
         />
+        {/* Desktop Health Bar below model */}
+        <div className="w-48">
+          <div className="w-full bg-gray-800 rounded-full h-6">
+            <div
+              className={`h-6 rounded-full transition-all duration-500 ${
+                health.health >= 50 ? 'bg-green-500' : 'bg-red-500'
+              }`}
+              style={{ width: `${health.health}%` }}
+            />
+          </div>
+          <div className="text-white text-xl font-bold text-center mt-1">
+            {healthLoading ? "..." : getHealthStatus(health.health)}
+          </div>
+        </div>
       </div>
       
+      {/* Mobile Controls - Top Right */}
+      <div className="md:hidden absolute top-2 right-4">
+        <div className="flex items-center gap-2">
+          {/* Menu Modal */}
+          <Dialog open={isMenuModalOpen} onOpenChange={setIsMenuModalOpen}>
+            <DialogTrigger asChild>
+              <button className="px-4 py-2 text-sm text-white border border-gray-700 rounded hover:border-gray-600 transition-colors">
+                Menu
+              </button>
+            </DialogTrigger>
+            <DialogContent className="bg-transparent border border-gray-700 p-6 max-w-sm">
+              <DialogHeader>
+                <DialogTitle className="text-white text-lg mb-4">Menu</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6">
+                {/* Enter Mines Button */}
+                <div className="space-y-3">
+                  <Button
+                    asChild
+                    className="w-full bg-transparent border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-600 transition-colors"
+                  >
+                    <a
+                      href="https://ore.supply"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setIsMenuModalOpen(false)}
+                    >
+                      Enter Mines
+                    </a>
+                  </Button>
+                </div>
+                {/* Prices Section */}
+                <div className="space-y-3">
+                  <div className="text-white text-sm font-thin opacity-70">Prices</div>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-3">
+                      <Image
+                        src={prices.oreIcon || "https://ore.supply/assets/icon.png"}
+                        alt="ORE"
+                        width={32}
+                        height={32}
+                        className="rounded-full w-8 h-8"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <div className="text-white text-lg font-bold">
+                        {loading ? "..." : `$${formatPrice(prices.ore)}`}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Image
+                        src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
+                        alt="SOL"
+                        width={32}
+                        height={32}
+                        className="rounded-full w-8 h-8"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <div className="text-white text-lg font-bold">
+                        {loading ? "..." : `$${formatPrice(prices.sol)}`}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* Community Tools Section */}
+                <div className="space-y-3">
+                  <div className="text-white text-sm font-thin opacity-70">Community Tools</div>
+                  <div className="space-y-2">
+                    <a
+                      href="https://refinore.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-gray-300 transition-colors block py-2"
+                      onClick={() => setIsMenuModalOpen(false)}
+                    >
+                      RefinORE
+                    </a>
+                    <a
+                      href="https://ore-mining-tracker.supply/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-gray-300 transition-colors block py-2"
+                      onClick={() => setIsMenuModalOpen(false)}
+                    >
+                      ORE Mining Tracker
+                    </a>
+                    <a
+                      href="https://gmore.fun/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-gray-300 transition-colors block py-2"
+                      onClick={() => setIsMenuModalOpen(false)}
+                    >
+                      gmore.fun
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          {/* Health Modal */}
+          <Dialog open={isHealthModalOpen} onOpenChange={setIsHealthModalOpen}>
+            <DialogTrigger asChild>
+              <button className="px-4 py-2 text-sm text-white border border-gray-700 rounded hover:border-gray-600 transition-colors">
+                Health
+              </button>
+            </DialogTrigger>
+            <DialogContent className="bg-transparent border border-gray-700 p-6 max-w-sm">
+              <DialogHeader>
+                <DialogTitle className="text-white text-lg mb-4">Health</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="flex justify-center">
+                  <ModelViewer
+                    modelPath={health.health < 50 ? "/hawg-3d-hungry/base.obj" : "/hawg-3d/base.obj"}
+                    basePath={health.health < 50 ? "/hawg-3d-hungry" : "/hawg-3d"}
+                    variant="compact"
+                  />
+                </div>
+                <div className="w-full max-w-sm mx-auto">
+                  <div className="w-full bg-gray-800 rounded-full h-6">
+                    <div
+                      className={`h-6 rounded-full transition-all duration-500 ${
+                        health.health >= 50 ? 'bg-green-500' : 'bg-red-500'
+                      }`}
+                      style={{ width: `${health.health}%` }}
+                    />
+                  </div>
+                  <div className="text-white text-lg font-bold text-center mt-1">
+                    {healthLoading ? "..." : getHealthStatus(health.health)}
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
       {/* Motherlode Box - Desktop Only - Top Left */}
       <div className="hidden md:block absolute left-8 top-8">
         <Card className="bg-transparent border border-gray-700">
@@ -359,7 +517,7 @@ export default function Home() {
       </div>
       
       {/* Community Tools Box - Desktop Only */}
-      <div className="hidden md:block absolute right-8 top-1/2 -translate-y-1/2">
+      <div className="hidden md:block absolute right-8 top-48 -translate-y-1/2">
         <Card className="bg-transparent border border-gray-700">
           <CardHeader>
             <CardTitle className="text-white text-xl">Community Tools</CardTitle>
@@ -395,128 +553,137 @@ export default function Home() {
         </Card>
       </div>
 
-      {/* Health Bar - Above Prices */}
-      <div className="absolute top-2 md:top-8 w-full px-4">
-        <div className="flex flex-col items-center gap-4 md:gap-6">
-          <div className="w-full max-w-2xl bg-gray-800 rounded-full h-6 md:h-8">
-            <div
-              className={`h-6 md:h-8 rounded-full transition-all duration-500 ${
-                    health.health >= 50 ? 'bg-green-500' :
-                    'bg-red-500'
-                  }`}
-                  style={{ width: `${health.health}%` }}
+      {/* Mobile Stats Grid - below buttons */}
+      <div className="md:hidden w-full px-4 mt-16">
+        <div className="grid grid-cols-2 gap-3">
+          {/* Motherlode - Mobile */}
+          <Card className="bg-transparent border border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white text-base">MOTHERLODE</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <Image
+                  src={prices.oreIcon || "https://ore.supply/assets/icon.png"}
+                  alt="ORE"
+                  width={24}
+                  height={24}
+                  className="rounded-full w-6 h-6"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
+                <div className="text-white text-lg font-bold">
+                  {motherlodeLoading ? "..." : motherlode.motherlode}
+                </div>
               </div>
-          <div className="text-white text-lg md:text-4xl font-bold text-center">
-            {healthLoading ? "..." : getHealthStatus(health.health)}
-            </div>
-          {/* Mobile Menu Button - Below Health Text */}
-          <div className="md:hidden">
-            <Dialog open={isMenuModalOpen} onOpenChange={setIsMenuModalOpen}>
-          <DialogTrigger asChild>
-            <button className="px-4 py-2 text-sm text-white border border-gray-700 rounded hover:border-gray-600 transition-colors">
-                  Menu
-            </button>
-          </DialogTrigger>
-              <DialogContent className="bg-transparent border border-gray-700 p-6 max-w-sm">
-            <DialogHeader>
-                  <DialogTitle className="text-white text-lg mb-4">Menu</DialogTitle>
-            </DialogHeader>
-                <div className="space-y-6">
-                  {/* Enter Mines Button */}
-                  <div className="space-y-3">
-                    <Button
-                      asChild
-                      className="w-full bg-transparent border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-600 transition-colors"
-                    >
-                      <a
-                        href="https://ore.supply"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => setIsMenuModalOpen(false)}
-                      >
-                        Enter Mines
-                      </a>
-                    </Button>
-                  </div>
+            </CardContent>
+          </Card>
 
-                  {/* Prices Section */}
-                  <div className="space-y-3">
-                    <div className="text-white text-sm font-thin opacity-70">Prices</div>
-                    <div className="flex flex-col gap-4">
-                      <div className="flex items-center gap-3">
-                        <Image
-                          src={prices.oreIcon || "https://ore.supply/assets/icon.png"}
-                          alt="ORE"
-                          width={32}
-                          height={32}
-                          className="rounded-full w-8 h-8"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                        <div className="text-white text-lg font-bold">
-                          {loading ? "..." : `$${formatPrice(prices.ore)}`}
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-3">
-                        <Image
-                          src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
-                          alt="SOL"
-                          width={32}
-                          height={32}
-                          className="rounded-full w-8 h-8"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                        <div className="text-white text-lg font-bold">
-                          {loading ? "..." : `$${formatPrice(prices.sol)}`}
-                        </div>
-                      </div>
-                    </div>
+          {/* Buyback - Mobile */}
+          <Card className="bg-transparent border border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white text-base">BUYBACK POWER</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <Image
+                    src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
+                    alt="SOL"
+                    width={24}
+                    height={24}
+                    className="rounded-full w-6 h-6"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                  <div className="text-white text-lg font-bold">
+                    {healthLoading ? "..." : `${formatPrice(health.solBalance)} SOL`}
                   </div>
+                </div>
+                <div className="text-white text-sm font-thin opacity-50 pl-8">
+                  {healthLoading || loading ? "..." : `$${formatPrice(health.solBalance * prices.sol)} USD`}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-                  {/* Community Tools Section */}
-            <div className="space-y-3">
-                    <div className="text-white text-sm font-thin opacity-70">Community Tools</div>
-                    <div className="space-y-2">
-              <a
-                href="https://refinore.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-gray-300 transition-colors block py-2"
-                        onClick={() => setIsMenuModalOpen(false)}
-              >
-                RefinORE
-              </a>
-              <a
-                href="https://ore-mining-tracker.supply/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-gray-300 transition-colors block py-2"
-                        onClick={() => setIsMenuModalOpen(false)}
-              >
-                ORE Mining Tracker
-              </a>
-              <a
-                href="https://gmore.fun/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-gray-300 transition-colors block py-2"
-                        onClick={() => setIsMenuModalOpen(false)}
-              >
-                gmore.fun
-              </a>
-                    </div>
+          {/* Miners - Mobile */}
+          <Card className={`bg-transparent border ${getMiningStatusColor(round.miningStatus)}`}>
+            <CardHeader>
+              <CardTitle className="text-white text-base">
+                {roundLoading ? "..." : `${round.uniqueMiners} MINERS`}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <Image
+                    src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
+                    alt="SOL"
+                    width={24}
+                    height={24}
+                    className="rounded-full w-6 h-6"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                  <div className="text-white text-lg font-bold">
+                    {roundLoading ? "..." : `${parseFloat(round.deployedSol).toFixed(4)} SOL`}
                   </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-          </div>
+                </div>
+                <div className="text-white text-sm font-thin opacity-50 pl-8">
+                  {roundLoading ? "..." : `${avgDeployedSolPerMiner.toFixed(4)} SOL average`}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Production Cost - Mobile */}
+          <Card className="bg-transparent border border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white text-base flex items-center gap-1">
+                <Image
+                  src={prices.oreIcon || "https://ore.supply/assets/icon.png"}
+                  alt="ORE"
+                  width={16}
+                  height={16}
+                  className="rounded-full w-4 h-4"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+                PRODUCTION COST
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <Image
+                    src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
+                    alt="SOL"
+                    width={24}
+                    height={24}
+                    className="rounded-full w-6 h-6"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                  <div className="text-white text-lg font-bold">
+                    {costLoading ? "..." : `${minersPerCostSol.toFixed(4)}`}
+                  </div>
+                </div>
+                <div className="text-white text-sm font-thin opacity-50 pl-8">
+                  {costLoading ? "..." : `$${formatPrice(usdFromDisplayedSol)} (${formatPrice(oreMultiplier)}x)`}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
+
+      {/* (Removed hidden mobile health bar block to avoid hiding controls) */}
       
       <div className="absolute bottom-16 md:bottom-4 md:left-8 md:top-auto w-full md:w-auto px-4 hidden md:flex">
         <div className="flex justify-center md:justify-start items-center gap-8 md:gap-6 flex-col md:flex-row">

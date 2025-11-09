@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, Suspense, useState } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
@@ -108,6 +108,11 @@ function Model({ url, basePath }: { url: string; basePath: string }) {
   }, [url, basePath]);
 
   // Auto-rotation disabled
+  useFrame((_, delta) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y -= 0.25 * delta;
+    }
+  });
 
   if (!obj) return null;
 
@@ -134,11 +139,23 @@ function CameraController() {
   return null;
 }
 
-export default function ModelViewer({ modelPath, basePath }: { modelPath: string; basePath: string }) {
+export default function ModelViewer({
+  modelPath,
+  basePath,
+  variant = "full",
+}: {
+  modelPath: string;
+  basePath: string;
+  variant?: "full" | "compact";
+}) {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const containerClass =
+    variant === "compact"
+      ? "w-80 h-80 md:w-80 md:h-80"
+      : "w-full h-screen";
   
   return (
-    <div className="w-full h-screen flex items-center justify-center">
+    <div className={`${containerClass} flex items-center justify-center`}>
       <Canvas 
         camera={{ position: [0, 0.8, isMobile ? 5.5 : 4.5], fov: isMobile ? 60 : 50 }}
         gl={{ alpha: true }}
