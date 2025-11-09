@@ -32,6 +32,12 @@ interface Motherlode {
   motherlode: string;
 }
 
+interface Round {
+  deployedSol: string;
+  miningStatus: string;
+  uniqueMiners: string;
+}
+
 export default function Home() {
   const [prices, setPrices] = useState<Prices>({ sol: 0, ore: 0, oreIcon: "" });
   const [loading, setLoading] = useState(true);
@@ -39,6 +45,8 @@ export default function Home() {
   const [healthLoading, setHealthLoading] = useState(true);
   const [motherlode, setMotherlode] = useState<Motherlode>({ motherlode: "0.000000000 ORE" });
   const [motherlodeLoading, setMotherlodeLoading] = useState(true);
+  const [round, setRound] = useState<Round>({ deployedSol: "0.000000000", miningStatus: "idle", uniqueMiners: "0" });
+  const [roundLoading, setRoundLoading] = useState(true);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
 
   useEffect(() => {
@@ -101,11 +109,49 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const fetchRound = async () => {
+      try {
+        const response = await fetch("/api/round");
+        const data = await response.json();
+        setRound({ 
+          deployedSol: data.deployedSol || "0.000000000",
+          miningStatus: data.miningStatus || "idle",
+          uniqueMiners: data.uniqueMiners || "0"
+        });
+      } catch (error) {
+        console.error("Error fetching round data:", error);
+      } finally {
+        setRoundLoading(false);
+      }
+    };
+
+    fetchRound();
+    // Refresh round data every 1 second for real-time updates
+    const interval = setInterval(fetchRound, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const formatPrice = (price: number) => {
     if (price === 0) return "0.00";
     if (price < 0.01) return price.toFixed(6);
     if (price < 1) return price.toFixed(4);
     return price.toFixed(2);
+  };
+
+  const getMiningStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "border-yellow-500";
+      case "finished":
+        return "border-green-500";
+      case "expired":
+        return "border-gray-500";
+      case "idle":
+      default:
+        return "border-gray-700";
+    }
   };
 
   const getHealthStatus = (health: number) => {
@@ -179,6 +225,34 @@ export default function Home() {
               </div>
               <div className="text-white text-lg font-semibold opacity-50 pl-11">
                 {healthLoading || loading ? "..." : `$${formatPrice(health.solBalance * prices.sol)} USD`}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Deployed SOL Box - Desktop Only - Below Buyback Power */}
+      <div className="hidden md:block absolute left-8 top-96">
+        <Card className={`bg-transparent border ${getMiningStatusColor(round.miningStatus)}`}>
+          <CardHeader>
+            <CardTitle className="text-white text-xl">
+              {roundLoading ? "..." : `${round.uniqueMiners} MINERS`}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3">
+              <Image
+                src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
+                alt="SOL"
+                width={32}
+                height={32}
+                className="rounded-full w-8 h-8"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              <div className="text-white text-2xl font-bold">
+                {roundLoading ? "..." : `${parseFloat(round.deployedSol).toFixed(4)} SOL`}
               </div>
             </div>
           </CardContent>

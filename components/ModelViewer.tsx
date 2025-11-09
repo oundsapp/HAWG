@@ -89,7 +89,7 @@ function Model({ url, basePath }: { url: string; basePath: string }) {
         
         // Scale the model to make it bigger (smaller on mobile)
         const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-        const scale = isMobile ? 1.5 : 1.4;
+        const scale = isMobile ? 1.5 : 1.2;
         object.scale.multiplyScalar(scale);
         
         setObj(object);
@@ -157,7 +157,7 @@ export default function ModelViewer({ modelPath, basePath }: { modelPath: string
           enableRotate={true}
           minPolarAngle={Math.PI / 2 - 0.3}
           maxPolarAngle={Math.PI / 2 - 0.3}
-          target={[0, 0.5, 0]}
+          target={[0, isMobile ? 0.5 : 0.3, 0]}
         />
       </Canvas>
     </div>
