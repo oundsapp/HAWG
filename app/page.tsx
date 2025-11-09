@@ -162,6 +162,43 @@ export default function Home() {
     return "FULL";
   };
 
+  // Expected production cost for 1 ORE using p = 1/625
+  const motherlodeOreAmount = (() => {
+    const parts = motherlode.motherlode?.split(" ");
+    const numeric = parseFloat(parts?.[0] ?? "0");
+    return Number.isFinite(numeric) ? numeric : 0;
+  })();
+  const deployedSolAmount = (() => {
+    const numeric = parseFloat(round.deployedSol ?? "0");
+    return Number.isFinite(numeric) ? numeric : 0;
+  })();
+  const costLoading = loading || motherlodeLoading || roundLoading;
+  const costPerOreSol = !costLoading && motherlodeOreAmount > 0 && deployedSolAmount > 0
+    ? (625 * deployedSolAmount) / motherlodeOreAmount
+    : 0;
+  const costPerOreUsd = !costLoading && costPerOreSol > 0
+    ? costPerOreSol * (prices.sol ?? 0)
+    : 0;
+  const uniqueMinersNumber = (() => {
+    const numeric = parseInt(round.uniqueMiners ?? "0", 10);
+    return Number.isFinite(numeric) ? numeric : 0;
+  })();
+  const minersPerCostSol = !costLoading && uniqueMinersNumber > 0 && costPerOreSol > 0
+    ? uniqueMinersNumber / costPerOreSol
+    : 0;
+  // USD equivalent of the SOL value displayed above
+  const usdFromDisplayedSol = !costLoading && minersPerCostSol > 0
+    ? minersPerCostSol * (prices.sol ?? 0)
+    : 0;
+  // Multiplier vs ORE market price
+  const oreMultiplier = !costLoading && (prices.ore ?? 0) > 0
+    ? usdFromDisplayedSol / (prices.ore ?? 1)
+    : 0;
+  // Average deployed SOL per miner (for miners box title)
+  const avgDeployedSolPerMiner = uniqueMinersNumber > 0
+    ? deployedSolAmount / uniqueMinersNumber
+    : 0;
+
   return (
     <main 
       className="relative flex flex-col min-h-screen items-center justify-center" 
@@ -223,7 +260,7 @@ export default function Home() {
                   {healthLoading ? "..." : `${formatPrice(health.solBalance)} SOL`}
                 </div>
               </div>
-              <div className="text-white text-lg font-semibold opacity-50 pl-11">
+              <div className="text-white text-lg font-thin opacity-50 pl-11">
                 {healthLoading || loading ? "..." : `$${formatPrice(health.solBalance * prices.sol)} USD`}
               </div>
             </div>
@@ -253,6 +290,52 @@ export default function Home() {
               />
               <div className="text-white text-2xl font-bold">
                 {roundLoading ? "..." : `${parseFloat(round.deployedSol).toFixed(4)} SOL`}
+              </div>
+            </div>
+            <div className="text-white text-lg font-thin opacity-50 pl-11">
+              {roundLoading ? "..." : `${avgDeployedSolPerMiner.toFixed(4)} SOL average`}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Production Cost (1 ORE) - Desktop Only - Below Current Round */}
+      <div className="hidden md:block absolute left-8 top-[36rem]">
+        <Card className="bg-transparent border border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white text-xl flex items-center gap-2">
+              <Image
+                src={prices.oreIcon || "https://ore.supply/assets/icon.png"}
+                alt="ORE"
+                width={20}
+                height={20}
+                className="rounded-full w-5 h-5"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              PRODUCTION COST
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-3">
+                <Image
+                  src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
+                  alt="SOL"
+                  width={32}
+                  height={32}
+                  className="rounded-full w-8 h-8"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+                <div className="text-white text-2xl font-bold">
+                  {costLoading ? "..." : `${minersPerCostSol.toFixed(4)}`}
+                </div>
+              </div>
+              <div className="text-white text-lg font-thin opacity-50 pl-11">
+                {costLoading ? "..." : `$${formatPrice(usdFromDisplayedSol)} (${formatPrice(oreMultiplier)}x)`}
               </div>
             </div>
           </CardContent>
@@ -359,7 +442,7 @@ export default function Home() {
 
                   {/* Prices Section */}
                   <div className="space-y-3">
-                    <div className="text-white text-sm font-semibold opacity-70">Prices</div>
+                    <div className="text-white text-sm font-thin opacity-70">Prices</div>
                     <div className="flex flex-col gap-4">
                       <div className="flex items-center gap-3">
                         <Image
@@ -397,7 +480,7 @@ export default function Home() {
 
                   {/* Community Tools Section */}
             <div className="space-y-3">
-                    <div className="text-white text-sm font-semibold opacity-70">Community Tools</div>
+                    <div className="text-white text-sm font-thin opacity-70">Community Tools</div>
                     <div className="space-y-2">
               <a
                 href="https://refinore.com/"
@@ -474,7 +557,7 @@ export default function Home() {
       
       {/* Credit - Bottom Right */}
       <div className="absolute bottom-4 right-4">
-        <div className="text-white text-sm opacity-70">
+        <div className="text-white text-sm font-thin opacity-70">
           created by{" "}
           <a
             href="https://x.com/glocktoshi"

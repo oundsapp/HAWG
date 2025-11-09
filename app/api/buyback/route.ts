@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 const BUYBACK_ADDRESS = "45db2FSR4mcXdSVVZbKbwojU6uYDpMyhpEi7cC8nHaWG";
 const MIN_SOL = 0; // 100% health at or below this amount
-const MAX_SOL = 500; // 0% health at or above this amount
+const MAX_SOL = 1000; // 0% health at or above this amount
 
 export async function GET() {
   try {
