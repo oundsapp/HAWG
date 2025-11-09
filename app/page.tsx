@@ -75,8 +75,8 @@ export default function Home() {
     };
 
     fetchHealth();
-    // Refresh health every 60 seconds
-    const interval = setInterval(fetchHealth, 60000);
+    // Refresh health every 5 seconds for real-time updates
+    const interval = setInterval(fetchHealth, 5000);
 
     return () => clearInterval(interval);
   }, []);
@@ -95,8 +95,8 @@ export default function Home() {
     };
 
     fetchMotherlode();
-    // Refresh motherlode every 60 seconds
-    const interval = setInterval(fetchMotherlode, 60000);
+    // Refresh motherlode every 5 seconds for real-time updates
+    const interval = setInterval(fetchMotherlode, 5000);
 
     return () => clearInterval(interval);
   }, []);
@@ -148,6 +148,37 @@ export default function Home() {
               />
               <div className="text-white text-2xl font-bold">
                 {motherlodeLoading ? "..." : motherlode.motherlode}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Buyback SOL Balance Box - Desktop Only - Below Motherlode */}
+      <div className="hidden md:block absolute left-8 top-48">
+        <Card className="bg-transparent border border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white text-xl">BUYBACK POWER</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-3">
+                <Image
+                  src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
+                  alt="SOL"
+                  width={32}
+                  height={32}
+                  className="rounded-full w-8 h-8"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+                <div className="text-white text-2xl font-bold">
+                  {healthLoading ? "..." : `${formatPrice(health.solBalance)} SOL`}
+                </div>
+              </div>
+              <div className="text-white text-lg font-semibold opacity-50 pl-11">
+                {healthLoading || loading ? "..." : `$${formatPrice(health.solBalance * prices.sol)} USD`}
               </div>
             </div>
           </CardContent>
