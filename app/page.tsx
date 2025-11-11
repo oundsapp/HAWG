@@ -49,6 +49,7 @@ export default function Home() {
   const [roundLoading, setRoundLoading] = useState(true);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
+  const showHallOfDevs = false;
 
   useEffect(() => {
     const fetchPrices = async () => {
@@ -205,6 +206,18 @@ export default function Home() {
       className="relative flex flex-col min-h-screen items-center justify-start md:justify-center" 
       style={{ backgroundColor: '#0a0a0a' }}
     >
+      {/* Center Image */}
+      <div className="flex-1 flex items-center justify-center">
+        <Image
+          src="/hawg-phd.png"
+          alt="HAWG PHD"
+          width={512}
+          height={512}
+          className="w-40 md:w-80 lg:w-[28rem] h-auto"
+          priority
+        />
+      </div>
+
       {/* Model + Health stack - Desktop Only - Bottom Right above credit */}
       <div className="hidden md:flex flex-col items-end gap-0 absolute bottom-12 right-0 z-10 items-center max-w-[250px]">
         {/* Desktop Model */}
@@ -327,6 +340,25 @@ export default function Home() {
                     >
                       gmore.fun
                     </a>
+                    <a
+                      href="https://www.ore.monster/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-gray-300 transition-colors block py-2"
+                      onClick={() => setIsMenuModalOpen(false)}
+                    >
+                      ore.monster
+                    </a>
+                    {showHallOfDevs && (
+                      <Button
+                        asChild
+                        className="w-full bg-transparent border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-600 transition-colors"
+                      >
+                        <a href="/hall-of-devs" onClick={() => setIsMenuModalOpen(false)}>
+                          Hall of Devs
+                        </a>
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -500,8 +532,16 @@ export default function Home() {
         </Card>
       </div>
       
-      {/* Enter Mines Button - Desktop Only - Top Right */}
-      <div className="hidden md:block absolute right-8 top-8">
+      {/* Top Right Buttons - Desktop Only */}
+      <div className="hidden md:flex absolute right-8 top-8 items-center gap-3 z-30">
+        {showHallOfDevs && (
+          <Button
+            asChild
+            className="bg-transparent border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-600 transition-colors"
+          >
+            <a href="/hall-of-devs">Hall of Devs</a>
+          </Button>
+        )}
         <Button
           asChild
           className="bg-transparent border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-600 transition-colors"
@@ -517,7 +557,7 @@ export default function Home() {
       </div>
       
       {/* Community Tools Box - Desktop Only */}
-      <div className="hidden md:block absolute right-8 top-48 -translate-y-1/2">
+      <div className="hidden md:block absolute right-8 top-48 z-20">
         <Card className="bg-transparent border border-gray-700">
           <CardHeader>
             <CardTitle className="text-white text-xl">Community Tools</CardTitle>
@@ -547,6 +587,14 @@ export default function Home() {
                 className="text-white hover:text-gray-300 transition-colors block"
               >
                 gmore.fun
+              </a>
+              <a
+                href="https://www.ore.monster/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-gray-300 transition-colors block"
+              >
+                ore.monster
               </a>
             </div>
           </CardContent>
