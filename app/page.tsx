@@ -50,6 +50,7 @@ export default function Home() {
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
   const showHallOfDevs = false;
+  const showProductionCost = false;
 
   useEffect(() => {
     const fetchPrices = async () => {
@@ -490,47 +491,49 @@ export default function Home() {
       </div>
       
       {/* Production Cost (1 ORE) - Desktop Only - Below Current Round */}
-      <div className="hidden md:block absolute left-8 top-[36rem]">
-        <Card className="bg-transparent border border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-white text-xl flex items-center gap-2">
-              <Image
-                src={prices.oreIcon || "https://ore.supply/assets/icon.png"}
-                alt="ORE"
-                width={20}
-                height={20}
-                className="rounded-full w-5 h-5"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
-              PRODUCTION COST
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-3">
+      {showProductionCost && (
+        <div className="hidden md:block absolute left-8 top-[36rem]">
+          <Card className="bg-transparent border border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white text-xl flex items-center gap-2">
                 <Image
-                  src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
-                  alt="SOL"
-                  width={32}
-                  height={32}
-                  className="rounded-full w-8 h-8"
+                  src={prices.oreIcon || "https://ore.supply/assets/icon.png"}
+                  alt="ORE"
+                  width={20}
+                  height={20}
+                  className="rounded-full w-5 h-5"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                   }}
                 />
-                <div className="text-white text-2xl font-bold">
-                  {costLoading ? "..." : `${minersPerCostSol.toFixed(4)}`}
+                PRODUCTION COST
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <Image
+                    src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
+                    alt="SOL"
+                    width={32}
+                    height={32}
+                    className="rounded-full w-8 h-8"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                  <div className="text-white text-2xl font-bold">
+                    {costLoading ? "..." : `${minersPerCostSol.toFixed(4)}`}
+                  </div>
+                </div>
+                <div className="text-white text-lg font-thin opacity-50 pl-11">
+                  {costLoading ? "..." : `$${formatPrice(usdFromDisplayedSol)} (${formatPrice(oreMultiplier)}x)`}
                 </div>
               </div>
-              <div className="text-white text-lg font-thin opacity-50 pl-11">
-                {costLoading ? "..." : `$${formatPrice(usdFromDisplayedSol)} (${formatPrice(oreMultiplier)}x)`}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
       
       {/* Top Right Buttons - Desktop Only */}
       <div className="hidden md:flex absolute right-8 top-8 items-center gap-3 z-30">
@@ -689,45 +692,47 @@ export default function Home() {
           </Card>
 
           {/* Production Cost - Mobile */}
-          <Card className="bg-transparent border border-gray-700">
-            <CardHeader>
-              <CardTitle className="text-white text-base flex items-center gap-1">
-                <Image
-                  src={prices.oreIcon || "https://ore.supply/assets/icon.png"}
-                  alt="ORE"
-                  width={16}
-                  height={16}
-                  className="rounded-full w-4 h-4"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-                PRODUCTION COST
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
+          {showProductionCost && (
+            <Card className="bg-transparent border border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-white text-base flex items-center gap-1">
                   <Image
-                    src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
-                    alt="SOL"
-                    width={24}
-                    height={24}
-                    className="rounded-full w-6 h-6"
+                    src={prices.oreIcon || "https://ore.supply/assets/icon.png"}
+                    alt="ORE"
+                    width={16}
+                    height={16}
+                    className="rounded-full w-4 h-4"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                     }}
                   />
-                  <div className="text-white text-lg font-bold">
-                    {costLoading ? "..." : `${minersPerCostSol.toFixed(4)}`}
+                  PRODUCTION COST
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <Image
+                      src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
+                      alt="SOL"
+                      width={24}
+                      height={24}
+                      className="rounded-full w-6 h-6"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                    <div className="text-white text-lg font-bold">
+                      {costLoading ? "..." : `${minersPerCostSol.toFixed(4)}`}
+                    </div>
+                  </div>
+                  <div className="text-white text-sm font-thin opacity-50 pl-8">
+                    {costLoading ? "..." : `$${formatPrice(usdFromDisplayedSol)} (${formatPrice(oreMultiplier)}x)`}
                   </div>
                 </div>
-                <div className="text-white text-sm font-thin opacity-50 pl-8">
-                  {costLoading ? "..." : `$${formatPrice(usdFromDisplayedSol)} (${formatPrice(oreMultiplier)}x)`}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
 
